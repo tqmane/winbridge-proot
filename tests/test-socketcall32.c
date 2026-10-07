@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later
- * Compile without an i386 libc: clang -m32 -ffreestanding -fno-stack-protector
+ * Compile without an i386 libc: clang -m32 -O2 -mstackrealign -ffreestanding -fno-stack-protector
  *   -nostdlib -static -Wl,-e,_start test-socketcall32.c -o test-socketcall32
  * Run with a 64-bit PRoot: proot -0 ./test-socketcall32
  * SCM_RIGHTS checks decoding; SCM_CREDENTIALS also checks pointer write-back.
