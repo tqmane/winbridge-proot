@@ -63,7 +63,8 @@ int handle_sendmsg_enter_end(Tracee *tracee, word_t sysnum)
 {
 	/* Read sendmsg header.  */
 	int status;
-	unsigned long socketcall_args[3];
+	/* socketcall is a 32-bit ABI even when PRoot itself is 64-bit. */
+	uint32_t socketcall_args[3];
 	struct msghdr msg = {};
 	bool is_socketcall = sysnum == PR_socketcall;
 
@@ -92,6 +93,7 @@ int handle_sendmsg_enter_end(Tracee *tracee, word_t sysnum)
 		 * for non-socketcall handler.  */
 		if (call == SYS_SOCKET) {
 			status = read_data(tracee, socketcall_args, peek_reg(tracee, CURRENT, SYSARG_2), sizeof(socketcall_args));
+			if (status < 0) return status;
 			/* Emulate audit functionality not compiled into kernel
 			 * 		 * if tracee was supposed to have the capability.  */
 			if (
@@ -119,7 +121,7 @@ int handle_sendmsg_enter_end(Tracee *tracee, word_t sysnum)
 	{
 		bool did_modify = 0;
 
-		if (msg.msg_controllen > MAX_CONTROLLEN) {
+		if (msg_controllen > MAX_CONTROLLEN) {
 			VERBOSE(tracee, 1, "sendmsg() with msg_controllen=%zu, is_32on64_mode=%d, not doing fixup", msg_controllen, is_32on64_mode(tracee));
 			return 0;
 		}
